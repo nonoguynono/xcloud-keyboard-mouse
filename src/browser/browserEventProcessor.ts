@@ -8,7 +8,10 @@ import {
   simulateBtnPress,
   simulateBtnUnpress,
 } from './gamepadSimulator';
-import { Direction, GamepadConfig, StickNum, MouseButtons } from '../shared/types';
+import { Direction, GamepadConfig, StickNum, MouseButtons, getAllEnumKeys } from '../shared/types';
+
+const mouseButtonCodes = getAllEnumKeys(MouseButtons);
+const scrollCodes = ['ScrollUp', 'ScrollDown'];
 
 const listeners = {
   keydown: null as null | EventListener,
@@ -50,6 +53,7 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
     movementY = 0;
     simulateAxeMove(axe, clampedX, clampedY);
   };
+  // Listen to mouse move - only added once pointer lock is engaged
   listeners.mousemove = function onMouseMove(e: Event) {
     const { movementX: mx, movementY: my } = e as PointerEvent;
     movementX += mx;
@@ -60,6 +64,7 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
       setTimeout(handleMouseMove, 40); // 16 ms = 60 fps, 32 ms = 30 fps
     }
   };
+  // Listen for pointer lock when user clicks on the target
   listeners.pointerlockchange = function onPointerLockChange() {
     if (!listeners.mousemove) return;
     if (document.pointerLockElement) {
@@ -98,7 +103,7 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
 function listenKeyboard(codeMapping: Record<string, CodeMap>) {
   let stopScrollTimer: any;
   let prevScrollCode: string | null = null;
-
+  // Helper function
   const handleKeyEvent = (
     code: string,
     buttonFn: (index: number) => void,
@@ -117,7 +122,7 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
     }
     return false;
   };
-
+  // Add keyboard press/unpress listeners
   listeners.keydown = function keyDown(e) {
     const event = e as KeyboardEvent;
     if (event.repeat) return;
@@ -129,7 +134,8 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
   };
   document.addEventListener('keydown', listeners.keydown);
   document.addEventListener('keyup', listeners.keyup);
-  if (codeMapping.Click || codeMapping.RightClick) {
+  // Add mouse button listeners if there are any mouse button button bindings in the config
+  if (mouseButtonCodes.some((buttonCode) => codeMapping[buttonCode])) {
     const parentElement = getParentElement();
     listeners.mousedown = function mouseDown(e) {
       const { button } = e as MouseEvent;
@@ -148,7 +154,8 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
     parentElement.addEventListener('mousedown', listeners.mousedown);
     parentElement.addEventListener('mouseup', listeners.mouseup);
   }
-  if (codeMapping.Scroll) {
+  // Add scroll listeners if there are any scroll bindins in the config
+  if (scrollCodes.some((scrollCode) => codeMapping[scrollCode])) {
     const parentElement = getParentElement();
     listeners.wheel = function wheel(e) {
       const { deltaY } = e as WheelEvent;
@@ -173,6 +180,7 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
 }
 
 function unlistenKeyboard() {
+  // Remove any and all active listeners on the browser
   if (listeners.keydown) {
     document.removeEventListener('keydown', listeners.keydown);
   }

@@ -67,3 +67,8 @@ export enum MouseButtons {
   Aux4Click = 3,
   Aux5Click = 4,
 }
+
+export function getAllEnumKeys(someEnum: Record<string | number, any>) {
+  // https://www.crojach.com/blog/2019/2/6/getting-enum-keys-in-typescript
+  return Object.keys(someEnum).filter((key) => typeof key === 'string');
+}
