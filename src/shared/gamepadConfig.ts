@@ -10,6 +10,7 @@ import {
 export const DEFAULT_CONFIG_NAME = 'default';
 export const MAX_NUM_CONFIGS = 25;
 export const DEFAULT_SENSITIVITY = 10;
+export const MAX_BINDINGS_PER_BUTTON = 2; // TODO do people want/need tripple keybinds?
 
 const buttonToGamepadIndex: Record<keyof ButtonKeyConfig, number> = {
   a: 0,
@@ -63,6 +64,25 @@ export interface MouseConfigErrors {
   sensitivity?: string;
 }
 
+// Modifies a gamepad config in-place to convert old schemas
+export function upgradeOldGamepadConfig(config: GamepadConfig) {
+  const { keyConfig } = config;
+  (Object.keys(keyConfig) as Array<keyof GamepadKeyConfig>).forEach((button) => {
+    const keyMap = keyConfig[button];
+    if (!keyMap) {
+      return;
+    }
+    const codes = (!Array.isArray(keyMap) ? [keyMap] : keyMap).flatMap((code) => {
+      // Expand any special code into a group of codes (e.g. 'Scroll' -> ['ScrollUp', 'ScrollDown'])
+      if (code === 'Scroll') {
+        return ['ScrollUp', 'ScrollDown'];
+      }
+      return code;
+    });
+    keyConfig[button] = codes;
+  });
+}
+
 export function processGamepadConfig(config: GamepadKeyConfig) {
   // Validate a given code has only one button
   // and normalize from code to buttons array
@@ -74,6 +94,14 @@ export function processGamepadConfig(config: GamepadKeyConfig) {
       return;
     }
     const codes = !Array.isArray(keyMap) ? [keyMap] : keyMap;
+
+    // Technically we allow importing configs with more than MAX_BINDINGS_PER_BUTTON, but it is not possible
+    // in the UI. We could validate it here if we want to be more strict.
+    // if (codes.length > MAX_BINDINGS_PER_BUTTON) {
+    //   invalidButtons[button] = `Only ${MAX_BINDINGS_PER_BUTTON} bindings per button is allowed`;
+    //   return;
+    // }
+
     for (const code of codes) {
       if (code === 'Escape') {
         invalidButtons[button] = 'Binding Escape key is not allowed';
@@ -134,7 +162,7 @@ export const defaultGamepadConfig: GamepadConfig = {
     a: 'Space',
     b: ['ControlLeft', 'Backspace'],
     x: 'KeyR',
-    y: ['KeyV', 'Scroll'],
+    y: ['ScrollUp', 'ScrollDown'],
     leftShoulder: ['KeyC', 'KeyG'],
     leftTrigger: 'RightClick',
     rightShoulder: 'KeyQ',

@@ -1,5 +1,5 @@
 import { AllMyGamepadConfigs, GamepadConfig } from '../../shared/types';
-import { defaultGamepadConfig, DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
+import { defaultGamepadConfig, DEFAULT_CONFIG_NAME, upgradeOldGamepadConfig } from '../../shared/gamepadConfig';
 
 // Chrome Sync Storage Limits:
 // max items = 512
@@ -76,7 +76,9 @@ function normalizeGamepadConfigs(data: Record<string, any> = {}): AllMyGamepadCo
     activeConfig,
     configs: keys.reduce((configs, key) => {
       const name = key.split(':')[1];
-      configs[name] = data[key];
+      const config = data[key];
+      upgradeOldGamepadConfig(config);
+      configs[name] = config;
       return configs;
     }, initialConfigsMap),
   };

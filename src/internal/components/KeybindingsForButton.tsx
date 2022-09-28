@@ -5,8 +5,7 @@ import 'react-responsive-modal/styles.css';
 import { KeyMap, MouseButtons } from '../../shared/types';
 import { camelToSpace } from '../utils/formattingUtils';
 import { ExclamationCircle } from './icons';
-
-const MAX_BINDINGS = 2; // TODO do people want/need tripple keybinds?
+import { MAX_BINDINGS_PER_BUTTON } from '../../shared/gamepadConfig';
 
 interface TrippleKeybindProps {
   button: string;
@@ -50,9 +49,10 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
   const handleWheel: WheelEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (e.cancelable) e.preventDefault();
-      const code = 'Scroll';
-      if (codes.indexOf(code) === -1) {
-        onChange(button, codes.concat([code]));
+      const { deltaY } = e;
+      const scrollCode = deltaY < 0 ? 'ScrollUp' : 'ScrollDown';
+      if (codes.indexOf(scrollCode) === -1) {
+        onChange(button, codes.concat([scrollCode]));
       }
       handleCancelListen();
     },
@@ -81,9 +81,9 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
   };
 
   const showNoneMessage = !codes.length && readOnly;
-  const canAddMore = codes.length < MAX_BINDINGS;
+  const canAddMore = codes.length < MAX_BINDINGS_PER_BUTTON;
   const showAddBtn = !readOnly && canAddMore;
-  const numSpacers = readOnly || codes.length >= MAX_BINDINGS - 1 ? 0 : 1;
+  const numSpacers = readOnly || codes.length >= MAX_BINDINGS_PER_BUTTON - 1 ? 0 : 1;
   const spacers: string[] = !useSpacers || showNoneMessage ? [] : new Array(numSpacers).fill(' ');
   const modal = (
     <Modal
@@ -110,10 +110,14 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
       <ExclamationCircle className="error margin-left-s" />
     </TooltipHost>
   ) : null;
+  let buttonFriendly = camelToSpace(button);
+  if (buttonFriendly.indexOf(' ') === -1) {
+    buttonFriendly = buttonFriendly + ' Button';
+  }
   return (
     <tr>
       <th>
-        {camelToSpace(button)}
+        {buttonFriendly}
         {modal}
         {errorNotice}
       </th>

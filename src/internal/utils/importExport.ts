@@ -1,4 +1,4 @@
-import { isGamepadConfigValid } from '../../shared/gamepadConfig';
+import { isGamepadConfigValid, upgradeOldGamepadConfig } from '../../shared/gamepadConfig';
 import { GamepadConfig } from '../../shared/types';
 
 const INPUT_ID = 'import-json-input';
@@ -49,6 +49,7 @@ export function importConfig(): Promise<GamepadConfig> {
         try {
           const json = JSON.parse(lines as string) as GamepadConfig;
           isValid = isGamepadConfigValid(json);
+          upgradeOldGamepadConfig(json);
           config = json;
         } catch (e) {
           isValid = false;

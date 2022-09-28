@@ -36,7 +36,7 @@ export default function NewConfigButton({ disabled, allConfigs, onCreate, onImpo
       .then((config) => {
         onImport(name, config);
         if (isMounted()) setName('');
-        alert('Preset imported from file successfully');
+        alert('Preset file imported successfully');
       })
       .catch((errorMsg) => {
         console.error('Import failed', errorMsg);

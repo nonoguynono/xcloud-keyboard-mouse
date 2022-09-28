@@ -97,6 +97,8 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
 
 function listenKeyboard(codeMapping: Record<string, CodeMap>) {
   let stopScrollTimer: any;
+  let prevScrollCode: string | null = null;
+
   const handleKeyEvent = (
     code: string,
     buttonFn: (index: number) => void,
@@ -149,12 +151,20 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
   if (codeMapping.Scroll) {
     const parentElement = getParentElement();
     listeners.wheel = function wheel(e) {
-      const handled = handleKeyEvent('Scroll', simulateBtnPress, simulateAxeDirPress);
+      const { deltaY } = e as WheelEvent;
+      const scrollCode = deltaY < 0 ? 'ScrollUp' : 'ScrollDown';
+      if (prevScrollCode && prevScrollCode !== scrollCode) {
+        // scroll direction changed, unpress the original "button" right away
+        clearTimeout(stopScrollTimer);
+        handleKeyEvent(prevScrollCode, simulateBtnUnpress, simulateAxeDirUnpress);
+      }
+      const handled = handleKeyEvent(scrollCode, simulateBtnPress, simulateAxeDirPress);
+      prevScrollCode = scrollCode;
       if (handled) {
         if (e.cancelable) e.preventDefault();
         clearTimeout(stopScrollTimer);
         stopScrollTimer = setTimeout(() => {
-          handleKeyEvent('Scroll', simulateBtnUnpress, simulateAxeDirUnpress);
+          handleKeyEvent(scrollCode, simulateBtnUnpress, simulateAxeDirUnpress);
         }, 20);
       }
     };

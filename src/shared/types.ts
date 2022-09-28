@@ -58,6 +58,8 @@ export interface AllMyGamepadConfigs {
   configs: Record<string, GamepadConfig>;
 }
 
+// The enum number maps to MouseEvent.button
+// https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button#value
 export enum MouseButtons {
   Click = 0,
   MiddleClick = 1,
