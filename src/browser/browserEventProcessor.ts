@@ -8,7 +8,7 @@ import {
   simulateBtnPress,
   simulateBtnUnpress,
 } from './gamepadSimulator';
-import { Direction, GamepadConfig, StickNum } from '../shared/types';
+import { Direction, GamepadConfig, StickNum, MouseButtons } from '../shared/types';
 
 const listeners = {
   keydown: null as null | EventListener,
@@ -131,18 +131,16 @@ function listenKeyboard(codeMapping: Record<string, CodeMap>) {
     const parentElement = getParentElement();
     listeners.mousedown = function mouseDown(e) {
       const { button } = e as MouseEvent;
-      if (button === 0 && codeMapping.Click) {
-        handleKeyEvent('Click', simulateBtnPress, simulateAxeDirPress);
-      } else if (button === 2 && codeMapping.RightClick) {
-        handleKeyEvent('RightClick', simulateBtnPress, simulateAxeDirPress);
+      const buttonCode = MouseButtons[button];
+      if (buttonCode && codeMapping[buttonCode]) {
+        handleKeyEvent(buttonCode, simulateBtnPress, simulateAxeDirPress);
       }
     };
     listeners.mouseup = function mouseUp(e) {
       const { button } = e as MouseEvent;
-      if (button === 0 && codeMapping.Click) {
-        handleKeyEvent('Click', simulateBtnUnpress, simulateAxeDirUnpress);
-      } else if (button === 2 && codeMapping.RightClick) {
-        handleKeyEvent('RightClick', simulateBtnUnpress, simulateAxeDirUnpress);
+      const buttonCode = MouseButtons[button];
+      if (buttonCode && codeMapping[buttonCode]) {
+        handleKeyEvent(buttonCode, simulateBtnUnpress, simulateAxeDirUnpress);
       }
     };
     parentElement.addEventListener('mousedown', listeners.mousedown);

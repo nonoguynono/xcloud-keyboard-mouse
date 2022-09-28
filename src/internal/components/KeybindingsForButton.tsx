@@ -2,7 +2,7 @@ import React, { memo, MouseEventHandler, useCallback, useMemo, useRef, useState,
 import { IconButton, TooltipHost, DirectionalHint } from '@fluentui/react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
-import { KeyMap } from '../../shared/types';
+import { KeyMap, MouseButtons } from '../../shared/types';
 import { camelToSpace } from '../utils/formattingUtils';
 import { ExclamationCircle } from './icons';
 
@@ -35,8 +35,8 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
     (e) => {
       if (e.cancelable) e.preventDefault();
       const { button: mouseButton } = e;
-      if (mouseButton === 0 || mouseButton === 2) {
-        const code = mouseButton === 0 ? 'Click' : 'RightClick';
+      if (MouseButtons[mouseButton]) {
+        const code = MouseButtons[mouseButton];
         if (codes.indexOf(code) === -1) {
           onChange(button, codes.concat([code]));
         }

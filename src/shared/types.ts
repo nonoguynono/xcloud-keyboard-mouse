@@ -57,3 +57,11 @@ export interface AllMyGamepadConfigs {
   activeConfig: string;
   configs: Record<string, GamepadConfig>;
 }
+
+export enum MouseButtons {
+  Click = 0,
+  MiddleClick = 1,
+  RightClick = 2,
+  Aux4Click = 3,
+  Aux5Click = 4,
+}
