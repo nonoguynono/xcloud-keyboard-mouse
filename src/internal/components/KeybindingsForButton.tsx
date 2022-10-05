@@ -3,14 +3,14 @@ import { IconButton, TooltipHost, DirectionalHint } from '@fluentui/react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { KeyMap, MouseButtons } from '../../shared/types';
-import { camelToSpace } from '../utils/formattingUtils';
+import { camelToSpace } from '../../shared/formattingUtils';
 import { ExclamationCircle } from './icons';
 import { MAX_BINDINGS_PER_BUTTON } from '../../shared/gamepadConfig';
 
 interface TrippleKeybindProps {
   button: string;
   value: KeyMap;
-  onChange: (button: string, updated: KeyMap) => void;
+  onChange?: (button: string, updated: KeyMap) => void;
   error?: string;
   readOnly?: boolean;
   useSpacers?: boolean;
@@ -30,6 +30,8 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
     if (keyListener.current) document.removeEventListener('keydown', keyListener.current);
   }, []);
 
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = useCallback((e) => e.preventDefault(), []);
+
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (e.cancelable) e.preventDefault();
@@ -37,7 +39,7 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
       if (MouseButtons[mouseButton]) {
         const code = MouseButtons[mouseButton];
         if (codes.indexOf(code) === -1) {
-          onChange(button, codes.concat([code]));
+          onChange?.(button, codes.concat([code]));
         }
       }
       handleCancelListen();
@@ -52,7 +54,7 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
       const { deltaY } = e;
       const scrollCode = deltaY < 0 ? 'ScrollUp' : 'ScrollDown';
       if (codes.indexOf(scrollCode) === -1) {
-        onChange(button, codes.concat([scrollCode]));
+        onChange?.(button, codes.concat([scrollCode]));
       }
       handleCancelListen();
     },
@@ -66,7 +68,7 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
       if (e.cancelable) e.preventDefault();
       const { code } = e;
       if (code !== 'Escape' && codes.indexOf(code) === -1) {
-        onChange(button, codes.concat([code]));
+        onChange?.(button, codes.concat([code]));
       }
       handleCancelListen();
     };
@@ -74,7 +76,7 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
   }, [button, codes, readOnly, handleCancelListen, onChange]);
 
   const handleRemove = (i: number) => {
-    onChange(
+    onChange?.(
       button,
       codes.filter((_, j) => i !== j),
     );
@@ -98,6 +100,7 @@ function KeybindingsForButton({ button, value, onChange, readOnly, error, useSpa
         className="vertical centered unselectable"
         style={{ width: '60vw', height: '50vh', padding: 20 }}
         onMouseDown={isListening ? handleMouseDown : undefined}
+        onContextMenu={handleContextMenu}
         onWheel={isListening ? handleWheel : undefined}
       >
         <h3>Press any key or click to bind...</h3>

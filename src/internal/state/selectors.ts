@@ -1,3 +1,4 @@
+import { notPaidPayment } from '../../shared/payments';
 import { RootState } from './store';
 
 export const getAllGamepadConfigs = (state: RootState) => {
@@ -32,4 +33,16 @@ export const getGameName = (state: RootState) => {
     gameName: state.gameName,
     status: state.pending.gameStatus,
   };
+};
+
+export const getPayment = (state: RootState) => {
+  return state.payment || notPaidPayment;
+};
+
+export const getUpsellModalVisibility = (state: RootState) => {
+  return state.upsellModalVisibility;
+};
+
+export const getGlobalPrefs = (state: RootState) => {
+  return state.prefs;
 };

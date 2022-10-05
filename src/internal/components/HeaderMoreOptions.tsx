@@ -1,12 +1,26 @@
 import { IconButton, IContextualMenuItem } from '@fluentui/react';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 import { fluentXboxTheme } from './theme';
+import { getPayment } from '../state/selectors';
+import { showUpsellModalAction } from '../state/actions';
+import { useAppSelector } from './hooks/reduxHooks';
 
-const menuItems: IContextualMenuItem[] = [
+const specialColor = { color: '#D2042D' };
+
+const getMenuItems = (isPaid: boolean, onPay: () => void): IContextualMenuItem[] => [
   {
     key: 'version',
     text: `Version ${chrome.runtime.getManifest().version}`,
     disabled: true,
+  },
+  {
+    key: 'upgrade',
+    text: isPaid ? 'Upgraded!' : 'Upgrade',
+    style: isPaid ? undefined : specialColor,
+    disabled: isPaid,
+    onClick: isPaid ? undefined : onPay,
+    iconProps: { iconName: 'Diamond', style: isPaid ? undefined : specialColor },
   },
   {
     key: 'about',
@@ -39,6 +53,17 @@ const menuItems: IContextualMenuItem[] = [
 ];
 
 export default function HeaderMoreOptions() {
+  const dispatch = useDispatch();
+  const payment = useAppSelector(getPayment);
+
+  const handlePayClick = useCallback(() => {
+    dispatch(showUpsellModalAction(true));
+  }, [dispatch]);
+
+  const menuItems = useMemo(() => {
+    return getMenuItems(payment.paid, handlePayClick);
+  }, [payment.paid, handlePayClick]);
+
   return (
     <IconButton
       menuProps={{
@@ -50,7 +75,7 @@ export default function HeaderMoreOptions() {
         },
       }}
       role="menuitem"
-      title="More options"
+      title="More info"
     />
   );
 }

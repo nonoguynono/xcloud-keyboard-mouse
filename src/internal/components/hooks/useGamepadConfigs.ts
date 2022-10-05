@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { fetchAllAction } from '../../state/actions';
+import { fetchAllAction, fetchPaymentAction } from '../../state/actions';
 import { getActiveConfigName, getAllGamepadConfigs, getIsEnabled } from '../../state/selectors';
 import { useAppDispatch, useAppSelector } from './reduxHooks';
 
@@ -12,7 +12,13 @@ export default function useGamepadConfigs() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     if (status === 'idle') {
-      dispatch(fetchAllAction());
+      // fetch all stored data
+      dispatch(fetchAllAction())
+        .unwrap() // https://redux-toolkit.js.org/api/createAsyncThunk#handling-thunk-results
+        .then((_resp) => {
+          // request updated payment info
+          dispatch(fetchPaymentAction());
+        });
     }
   }, [dispatch, status]);
 

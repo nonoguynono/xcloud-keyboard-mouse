@@ -1,7 +1,7 @@
 # Contributing
 
 If you make any contributions to this repository after this file was created,
-you are agreeing that any code you have contributed will be licensed under GPL-3.0.
+you are agreeing that any code you have contributed will be licensed under the terms outlined in README.md.
 
 ## Prerequisites
 

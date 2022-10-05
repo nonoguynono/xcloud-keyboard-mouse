@@ -8,11 +8,20 @@ import useIsMounted from './hooks/useIsMounted';
 interface NewConfigButtonProps {
   allConfigs: Record<string, GamepadConfig>;
   disabled?: boolean;
+  isPaid?: boolean;
   onCreate: (name: string) => void;
   onImport: (name: string, config: GamepadConfig) => void;
+  onOpenPaymentPage: () => void;
 }
 
-export default function NewConfigButton({ disabled, allConfigs, onCreate, onImport }: NewConfigButtonProps) {
+export default function NewConfigButton({
+  disabled,
+  isPaid,
+  allConfigs,
+  onCreate,
+  onImport,
+  onOpenPaymentPage,
+}: NewConfigButtonProps) {
   const buttonId = 'new-config-btn';
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
@@ -25,9 +34,13 @@ export default function NewConfigButton({ disabled, allConfigs, onCreate, onImpo
     );
   }, [name, allConfigs]);
   const triggerRef = useRef<null | HTMLButtonElement>(null);
-  const handleToggleClick = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
+  const handleNewBtnClick = useCallback(() => {
+    if (isPaid) {
+      setIsOpen(!isOpen);
+    } else {
+      onOpenPaymentPage();
+    }
+  }, [isOpen, isPaid, onOpenPaymentPage]);
   const handleClose = useCallback(() => {
     setIsOpen(false);
   }, []);
@@ -58,8 +71,9 @@ export default function NewConfigButton({ disabled, allConfigs, onCreate, onImpo
     <>
       <IconButton
         id={buttonId}
+        className="new-preset-btn"
         elementRef={triggerRef}
-        onClick={handleToggleClick}
+        onClick={handleNewBtnClick}
         title="Add new preset"
         ariaLabel="Add new preset"
         disabled={disabled}

@@ -8,6 +8,10 @@ html, body {
   font-family: sans-serif;
 }
 
+:not(input) {
+  user-select: none;
+}
+
 .popup {
   width: 500px;
   height: 600px;
@@ -67,6 +71,10 @@ html, body {
   margin-top: 5px;
 }
 
+.margin-bottom-s {
+  margin-bottom: 5px;
+}
+
 .margin-left-s {
   margin-left: 5px;
 }
@@ -99,6 +107,10 @@ html, body {
 
 .logo {
   font-size: 24px;
+}
+
+.logo img {
+  transition: opacity 0.3s;
 }
 
 .setup-details {
@@ -184,14 +196,20 @@ html, body {
 }
 
 .config-selector {
-  min-height: 40px;
+  /* min-height: 40px; */
   padding-bottom: 12px;
   border-bottom: 1px solid #eee;
+}
+
+.new-preset-btn {
+  margin-left: 2px;
+  margin-right: 1px;
 }
 
 .config-editor {
   flex: 1 1 auto;
   overflow-y: auto;
+  overflow-x: hidden;
   height: 0px;
 }
 
@@ -238,11 +256,24 @@ html, body {
   user-select: none;
 }
 
-.config-editor table td>div {
+.config-editor table td:not(.empty)>div {
   padding: 3px;
   background-color: #eee;
 }
 
 .config-editor table tr td:not(:last-of-type) {
   border-right: 1px solid #ccc;
+}
+
+.global-prefs-body h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.global-prefs-body label {
+  padding-top: 0;
+}
+
+.global-prefs-body .command-keys {
+  letter-spacing: 0.5ch;
 }

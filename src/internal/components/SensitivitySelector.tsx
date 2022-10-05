@@ -27,15 +27,21 @@ export default function SensitivitySelector({ dispatch, disabled, readOnly, sens
     [dispatch],
   );
   return (
-    <SpinButton
-      label="Mouse movement sensitivity (1-99)"
-      className={classnames(readOnly && 'no-pointer-events')}
-      labelPosition={Position.top}
-      disabled={disabled}
-      onChange={readOnly ? undefined : handleChange}
-      value={disabled ? 'N/A' : (100 - sensitivity).toString()}
-      min={1}
-      max={99}
-    />
+    <div>
+      <SpinButton
+        label="Mouse movement sensitivity (1-99)"
+        className={classnames(readOnly && 'no-pointer-events')}
+        labelPosition={Position.top}
+        disabled={disabled}
+        onChange={readOnly ? undefined : handleChange}
+        value={disabled ? 'N/A' : (100 - sensitivity).toString()}
+        min={1}
+        max={99}
+      />
+      <small>
+        You may need to configure the sensitivity in the in-game settings as well (as well as turn off any
+        &quot;deadzone&quot; options in-game).
+      </small>
+    </div>
   );
 }

@@ -1,19 +1,25 @@
-import { GamepadConfig } from './types';
+import { GamepadConfig, GlobalPrefs } from './types';
 
 export enum MessageTypes {
   INJECTED = 'INJECTED',
   INITIALIZED = 'INITIALIZED',
   GAME_CHANGED = 'GAME_CHANGED',
   ACTIVATE_GAMEPAD_CONFIG = 'ACTIVATE_GAMEPAD_CONFIG',
-  DISABLE_GAMEPAD = 'DISABLE_GAMEPAD',
+  INITIALIZE_RESPONSE = 'INITIALIZE_RESPONSE',
+  SEEN_ONBOARDING = 'SEEN_ONBOARDING',
+  UPDATE_PREFS = 'UPDATE_PREFS',
+  CLOSE_WINDOW = 'CLOSE_WINDOW',
 }
 
 export type Message =
   | ReturnType<typeof injectedMsg>
   | ReturnType<typeof intializedMsg>
-  | ReturnType<typeof gameChanged>
+  | ReturnType<typeof gameChangedMsg>
   | ReturnType<typeof activateGamepadConfigMsg>
-  | ReturnType<typeof disableGamepadMsg>;
+  | ReturnType<typeof initializeResponseMsg>
+  | ReturnType<typeof seenOnboardingMsg>
+  | ReturnType<typeof updatePrefsMsg>
+  | ReturnType<typeof closeWindowMsg>;
 
 // Sent from page to background to enable the context button in the toolbar
 export function injectedMsg() {
@@ -26,19 +32,40 @@ export function intializedMsg(gameName: string | null) {
 }
 
 // Sent from page to background to set game name manually
-export function gameChanged(gameName: string | null) {
+export function gameChangedMsg(gameName: string | null) {
   return { type: MessageTypes.GAME_CHANGED as const, gameName };
+}
+
+// Sent from the page to background to note the user has seen the onboarding
+export function seenOnboardingMsg(seen = true) {
+  return { type: MessageTypes.SEEN_ONBOARDING as const, seen };
+}
+
+// Sent from background to page for user's first time using the extension
+export function initializeResponseMsg(
+  name: string | null,
+  gamepadConfig: GamepadConfig | null,
+  seenOnboarding: boolean,
+  prefs: GlobalPrefs,
+) {
+  return { type: MessageTypes.INITIALIZE_RESPONSE as const, name, gamepadConfig, seenOnboarding, prefs };
 }
 
 // Sent from background to page to set active mouse+keyboard config (null for disabled)
 export function activateGamepadConfigMsg(name: string | null, gamepadConfig: GamepadConfig | null) {
-  if (!gamepadConfig || !name) {
-    return disableGamepadMsg();
-  }
   return { type: MessageTypes.ACTIVATE_GAMEPAD_CONFIG as const, name, gamepadConfig };
 }
 
-// Sent from background to page to disable mouse+keyboard
 export function disableGamepadMsg() {
-  return { type: MessageTypes.DISABLE_GAMEPAD as const };
+  return activateGamepadConfigMsg(null, null);
+}
+
+// Sent from the background to page when preferences are updated that would impact it
+export function updatePrefsMsg(prefs: GlobalPrefs) {
+  return { type: MessageTypes.UPDATE_PREFS as const, prefs };
+}
+
+// Sent from the background to popup to close
+export function closeWindowMsg() {
+  return { type: MessageTypes.CLOSE_WINDOW as const };
 }

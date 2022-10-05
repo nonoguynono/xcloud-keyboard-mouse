@@ -1,36 +1,41 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { GamepadConfig } from '../../shared/types';
+import { createAction, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { GamepadConfig, GlobalPrefs, Payment } from '../../shared/types';
 import { DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
-import { activateGamepadConfigMsg, disableGamepadMsg, Message } from '../../shared/messages';
+import { activateGamepadConfigMsg, disableGamepadMsg, updatePrefsMsg } from '../../shared/messages';
 import { getGamepadConfig, isConfigActive } from './selectors';
 import { RootState } from './store';
 import {
   deleteGamepadConfig,
   getAllStoredSync,
   getLocalGameStatus,
-  storeActiveGamepadConfig,
   storeGamepadConfig,
   storeGamepadConfigEnabled,
+  storeGlobalPrefs,
 } from './chromeStoredData';
-import { getActiveTab } from '../utils/tabsUtils';
+import { getExtPay } from '../../shared/payments';
+import { sendMessage, setActiveConfig } from '../utils/messageUtils';
 
-const sendMessage = async (msg: Message) => {
-  const tab = await getActiveTab();
-  if (tab) {
-    chrome.tabs.sendMessage(tab.id!, msg);
-  }
-};
+const extpay = getExtPay();
+
+export const showUpsellModalAction = createAction<boolean>('upsellModal/show');
 
 export const fetchGameStatusAction = createAsyncThunk('meta/gameStatus', getLocalGameStatus);
 
 export const fetchAllAction = createAsyncThunk('config/fetchAll', getAllStoredSync);
 
+export const fetchPaymentAction = createAsyncThunk('payment/fetch', async (): Promise<Payment> => {
+  const user = await extpay.getUser();
+  return {
+    paid: user.paid,
+    paidAt: user.paidAt && user.paidAt.getTime(),
+    installedAt: user.installedAt.getTime(),
+  };
+});
+
 async function _setActiveConfig(name: string, state: RootState) {
   const { config: gamepadConfig } = getGamepadConfig(state, name);
   if (!gamepadConfig) throw new Error('Missing gamepad config cache');
-  await sendMessage(activateGamepadConfigMsg(name, gamepadConfig));
-  await storeActiveGamepadConfig(name);
-  return { name, gamepadConfig };
+  return await setActiveConfig(name, gamepadConfig);
 }
 
 export const activateGamepadConfigAction = createAsyncThunk(
@@ -67,3 +72,11 @@ export const modifyGamepadConfigAction = createAsyncThunk(
     return { name, gamepadConfig };
   },
 );
+
+// Sends the updated prefs (without waiting)
+export const updatePrefsAction = (prefs: GlobalPrefs): PayloadAction<GlobalPrefs> => {
+  // TODO should we just make this createAsyncThunk and await here?
+  sendMessage(updatePrefsMsg(prefs));
+  storeGlobalPrefs(prefs);
+  return { type: 'prefs/update', payload: prefs };
+};

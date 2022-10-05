@@ -1,4 +1,4 @@
-import { injectedMsg, Message, MessageTypes } from './shared/messages';
+import { Message, MessageTypes } from './shared/messages';
 import { injectCssFile, injectImagePaths, injectInitialScriptFile } from './shared/pageInjectUtils';
 
 /*
@@ -8,14 +8,19 @@ import { injectCssFile, injectImagePaths, injectInitialScriptFile } from './shar
  * https://developer.chrome.com/docs/extensions/mv3/content_scripts/#host-page-communication
  */
 
+injectInitialScriptFile(chrome.runtime.getURL('/js/vendor.js'));
 injectInitialScriptFile(chrome.runtime.getURL('/js/injected.js'));
 
 document.addEventListener('DOMContentLoaded', () => {
+  injectCssFile(chrome.runtime.getURL('/css/shared.css'));
   injectCssFile(chrome.runtime.getURL('/css/injected.css'));
-  injectImagePaths([chrome.runtime.getURL('/images/keyboard.svg')]);
+  injectImagePaths([
+    chrome.runtime.getURL('/images/keyboard.svg'),
+    chrome.runtime.getURL('/images/mouse.svg'),
+    chrome.runtime.getURL('/icon-16.png'),
+    chrome.runtime.getURL('/images/pin-screenshot.png'),
+  ]);
 });
-
-chrome.runtime.sendMessage(injectedMsg());
 
 // Send messages to the injected script
 function handleMessageFromExt(msg: Message) {
@@ -27,7 +32,7 @@ function handleMessageFromExt(msg: Message) {
 
 // Accept messages from the injected script
 window.addEventListener('message', (event) => {
-  if (event.source != window || event.data.source !== 'xcloud-page') {
+  if (event.source != window || !event.data || event.data.source !== 'xcloud-page') {
     // Ignore other potential messages from the webpage - we only accept messages from ourselves
     return;
   }
@@ -38,7 +43,7 @@ window.addEventListener('message', (event) => {
     // Proxy to the extension background script.
     // (only INITIALIZED message needs a response, so we avoid passing the callback
     // otherwise - see https://stackoverflow.com/a/59915897)
-    if (msg.type === MessageTypes.INITIALIZED) {
+    if (msg.type === MessageTypes.INITIALIZED || msg.type === MessageTypes.INJECTED) {
       chrome.runtime.sendMessage(msg, (response) => {
         // Handle response from extension
         handleMessageFromExt(response);

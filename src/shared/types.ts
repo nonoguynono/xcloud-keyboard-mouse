@@ -1,3 +1,9 @@
+import { User as ExtpayUser } from 'extpay';
+
+export interface GlobalPrefs {
+  showControlsOverlay: boolean;
+}
+
 export enum Direction {
   UP = 'u',
   DOWN = 'd',
@@ -52,10 +58,19 @@ export interface GamepadConfig {
   mouseConfig: GamepadMouseConfig;
 }
 
+export interface Payment {
+  paid: ExtpayUser['paid'];
+  paidAt: number | null;
+  installedAt: number;
+}
+
 export interface AllMyGamepadConfigs {
   isEnabled: boolean;
+  payment?: Payment;
+  seenOnboarding: boolean;
   activeConfig: string;
   configs: Record<string, GamepadConfig>;
+  prefs: GlobalPrefs;
 }
 
 // The enum number maps to MouseEvent.button

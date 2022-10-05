@@ -1,5 +1,6 @@
-import { AllMyGamepadConfigs, GamepadConfig } from '../../shared/types';
+import { AllMyGamepadConfigs, GamepadConfig, GlobalPrefs, Payment } from '../../shared/types';
 import { defaultGamepadConfig, DEFAULT_CONFIG_NAME, upgradeOldGamepadConfig } from '../../shared/gamepadConfig';
+import { defaultPrefs } from '../../shared/defaults';
 
 // Chrome Sync Storage Limits:
 // max items = 512
@@ -14,6 +15,9 @@ enum SyncStorageKeys {
   GAMEPAD_CONFIGS = 'GP_CONF',
   ACTIVE_GAMEPAD_CONFIG = 'ACTIVE_GP_CONF',
   ENABLED = 'ENABLED',
+  PAYMENT = 'PAYMENT',
+  ONBOARDED = 'ONBOARDED',
+  GLOBAL_PREFS = 'PREFS',
 }
 
 export function updateGameName(gameName: string | null) {
@@ -23,6 +27,13 @@ export function updateGameName(gameName: string | null) {
 export async function getLocalGameStatus(): Promise<string | null> {
   const data = await chrome.storage.local.get(LocalStorageKeys.GAME_NAME);
   return (data && data[LocalStorageKeys.GAME_NAME]) || null;
+}
+
+/**
+ * Sets "seen onboarding" to true.
+ */
+export function storeSeenOnboarding() {
+  return chrome.storage.sync.set({ [SyncStorageKeys.ONBOARDED]: true });
 }
 
 /**
@@ -51,6 +62,13 @@ export function storeGamepadConfigEnabled(enabled: boolean) {
 }
 
 /**
+ * Updates global preferences.
+ */
+export function storeGlobalPrefs(prefs: GlobalPrefs) {
+  return chrome.storage.sync.set({ [SyncStorageKeys.GLOBAL_PREFS]: prefs });
+}
+
+/**
  * Sets a gamepad config as active.
  */
 export function storeActiveGamepadConfig(name: string) {
@@ -63,18 +81,26 @@ export function storeActiveGamepadConfig(name: string) {
 
 function normalizeGamepadConfigs(data: Record<string, any> = {}): AllMyGamepadConfigs {
   const activeConfig: string = data[SyncStorageKeys.ACTIVE_GAMEPAD_CONFIG] || DEFAULT_CONFIG_NAME;
+  const payment: Payment = data[SyncStorageKeys.PAYMENT];
+  const prefs: GlobalPrefs = data[SyncStorageKeys.GLOBAL_PREFS] || defaultPrefs;
   const isEnabled: boolean =
     data[SyncStorageKeys.ENABLED] === undefined
       ? !!data[SyncStorageKeys.ACTIVE_GAMEPAD_CONFIG]
       : data[SyncStorageKeys.ENABLED];
-  const keys = Object.keys(data).filter((key) => key.startsWith(SyncStorageKeys.GAMEPAD_CONFIGS));
+  const allKeys = Object.keys(data);
+  const configKeys = allKeys.filter((key) => key.startsWith(SyncStorageKeys.GAMEPAD_CONFIGS));
+  const seenOnboarding: boolean =
+    data[SyncStorageKeys.ONBOARDED] || configKeys.length > 1 || activeConfig !== DEFAULT_CONFIG_NAME;
   const initialConfigsMap: AllMyGamepadConfigs['configs'] = {
     [DEFAULT_CONFIG_NAME]: defaultGamepadConfig,
   };
   return {
     isEnabled,
     activeConfig,
-    configs: keys.reduce((configs, key) => {
+    seenOnboarding,
+    payment,
+    prefs,
+    configs: configKeys.reduce((configs, key) => {
       const name = key.split(':')[1];
       const config = data[key];
       upgradeOldGamepadConfig(config);

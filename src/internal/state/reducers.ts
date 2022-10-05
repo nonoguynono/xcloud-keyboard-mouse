@@ -1,5 +1,13 @@
-import { Action, createReducer, isFulfilled, isPending, isRejected, SerializedError } from '@reduxjs/toolkit';
-import { AllMyGamepadConfigs } from '../../shared/types';
+import {
+  Action,
+  createReducer,
+  isFulfilled,
+  isPending,
+  isRejected,
+  PayloadAction,
+  SerializedError,
+} from '@reduxjs/toolkit';
+import { AllMyGamepadConfigs, GlobalPrefs, Payment } from '../../shared/types';
 import { defaultGamepadConfig, DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
 import {
   activateGamepadConfigAction,
@@ -7,8 +15,15 @@ import {
   disableGamepadConfigAction,
   fetchAllAction,
   fetchGameStatusAction,
+  fetchPaymentAction,
   modifyGamepadConfigAction,
+  showUpsellModalAction,
 } from './actions';
+import { defaultPrefs } from '../../shared/defaults';
+
+export const upsellModalVisibilityReducer = createReducer<boolean>(false, (builder) => {
+  builder.addCase(showUpsellModalAction, (state, action) => action.payload);
+});
 
 export const currentGameReducer = createReducer<string | null>(null, (builder) => {
   builder.addCase(fetchGameStatusAction.fulfilled, (state, action) => action.payload || null);
@@ -55,6 +70,19 @@ export const configDetailsReducer = createReducer<AllMyGamepadConfigs['configs']
   },
 );
 
+export const paymentReducer = createReducer<Payment | null>(null, (builder) => {
+  builder.addCase(fetchAllAction.fulfilled, (state, action) => action.payload.payment || null);
+  builder.addCase(fetchPaymentAction.fulfilled, (state, action) => action.payload || state);
+});
+
+export const prefsReducer = createReducer<GlobalPrefs>(defaultPrefs, (builder) => {
+  builder.addCase(fetchAllAction.fulfilled, (state, action) => {
+    return action.payload.prefs || state;
+  });
+  // TODO better type safety
+  builder.addCase('prefs/update' as string, (state, action: PayloadAction<GlobalPrefs>) => action.payload);
+});
+
 export type PendingReadStatus = 'idle' | 'reading' | 'success' | 'failure';
 export type PendingReadWriteStatus = PendingReadStatus | 'writing';
 
@@ -62,6 +90,7 @@ interface PendingStatusesState {
   readAll: PendingReadStatus;
   readAllError?: SerializedError;
   gameStatus: PendingReadStatus;
+  payment: PendingReadStatus;
   configs: Record<string, PendingReadWriteStatus>;
 }
 
@@ -76,14 +105,18 @@ export const pendingStatusesReducer = createReducer<PendingStatusesState>(
   {
     readAll: 'idle',
     gameStatus: 'idle',
+    payment: 'idle',
     configs: {},
   },
   (builder) => {
     builder.addCase(fetchAllAction.pending, (state) => {
       state.readAll = 'reading';
     });
-    builder.addCase(fetchAllAction.fulfilled, (state) => {
+    builder.addCase(fetchAllAction.fulfilled, (state, action) => {
       state.readAll = 'success';
+      if (action.payload.payment?.paid) {
+        state.payment = 'success';
+      }
     });
     builder.addCase(fetchAllAction.rejected, (state, action) => {
       state.readAll = 'failure';
@@ -97,6 +130,15 @@ export const pendingStatusesReducer = createReducer<PendingStatusesState>(
     });
     builder.addCase(fetchGameStatusAction.rejected, (state) => {
       state.gameStatus = 'failure';
+    });
+    builder.addCase(fetchPaymentAction.pending, (state) => {
+      state.payment = 'reading';
+    });
+    builder.addCase(fetchPaymentAction.fulfilled, (state) => {
+      state.payment = 'success';
+    });
+    builder.addCase(fetchPaymentAction.rejected, (state) => {
+      state.payment = 'failure';
     });
     builder.addMatcher(
       (action) => isWriteAction(action) && isPending(action),

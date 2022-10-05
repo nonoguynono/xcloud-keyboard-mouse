@@ -3,6 +3,7 @@ import Header from './components/Header';
 import MainConfigEditor from './components/MainConfigEditor';
 import useGameName from './components/hooks/useGameStatus';
 import useGamepadConfigs from './components/hooks/useGamepadConfigs';
+import UpsellModal from './components/UpsellModal';
 
 export default function Popup() {
   const { activeConfig, status, isEnabled, configs, error } = useGamepadConfigs();
@@ -18,6 +19,7 @@ export default function Popup() {
         configs={configs}
         error={error}
       />
+      <UpsellModal />
     </div>
   );
 }

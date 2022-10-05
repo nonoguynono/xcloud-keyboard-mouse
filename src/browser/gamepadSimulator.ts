@@ -184,6 +184,8 @@ export function modifyGamepadGlobals() {
 }
 
 export function enableSimulator(enable: boolean) {
+  // TODO Only reset back to the default gamepad if an actual controller is connected
+
   useFakeController = enable;
   if (enable) {
     simulateGamepadConnect();

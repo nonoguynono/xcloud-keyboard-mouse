@@ -1,3 +1,4 @@
+import { camelToSpace } from './formattingUtils';
 import {
   ButtonKeyConfig,
   AxesKeyConfig,
@@ -108,7 +109,7 @@ export function processGamepadConfig(config: GamepadKeyConfig) {
         continue;
       }
       if (codeMapping[code]) {
-        invalidButtons[button] = `'${code}' is already bound to button '${codeMapping[code].button}'`;
+        invalidButtons[button] = `'${code}' is already bound to button '${camelToSpace(codeMapping[code].button)}'`;
         continue;
       }
       const gamepadIndex = buttonToGamepadIndex[button as keyof ButtonKeyConfig];

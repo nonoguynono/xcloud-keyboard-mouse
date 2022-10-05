@@ -4,7 +4,7 @@
   "name": "Keyboard & Mouse for Xbox xCloud",
   "short_name": "xCloud KB&M",
   "description": "Play Xbox Cloud Gaming (Project xCloud) with a keyboard and mouse.",
-  "version": "2.6",
+  "version": "3.0",
   "author": "David Idol",
 
   "icons": {
@@ -23,6 +23,30 @@
     "default_title": "xCloud keyboard and mouse"
   },
 
+  "commands": {
+    "profile-prev": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Left",
+        "mac": "Command+Shift+Left"
+      },
+      "description": "Previous keyboard/mouse profile"
+    },
+    "profile-next": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Right",
+        "mac": "Command+Shift+Right"
+      },
+      "description": "Next keyboard/mouse profile"
+    },
+    "show-hide-cheatsheet": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+I",
+        "mac": "Command+Shift+I"
+      },
+      "description": "Show/hide cheatsheet overlay"
+    }
+  },
+
   "content_scripts": [
     {
       "run_at": "document_start",
@@ -31,6 +55,7 @@
         "https://gamepad-tester.com/"
       ],
       "js": [
+        "js/vendor.js",
         "js/content_script.js"
       ]
     }
@@ -39,10 +64,12 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "js/vendor.js",
         "js/injected.js",
-        "images/keyboard.svg",
-        "images/xbox-logo.svg",
-        "css/injected.css"
+        "css/injected.css",
+        "css/shared.css",
+        "icon-16.png",
+        "images/*"
       ],
       "matches": [
         "https://www.xbox.com/*",

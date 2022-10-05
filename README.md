@@ -34,11 +34,7 @@ A browser extension to control any game on [Xbox Cloud Gaming (Project xCloud)](
 
 Microsoft's cloud gaming service [Xbox Cloud Gaming (aka Project xCloud)](https://xbox.com/play) lets you play your favorite Xbox games in the cloud, but it runs on physical Xbox **consoles** (not PCs) behind the scenes.
 
-Since very few games on Xbox consoles support mouse and keyboard as first-class input devices, Microsoft chose to limit xCloud users to only using gamepad controllers to play (although [maybe they will add PC servers eventually](https://twitter.com/XboxP3/status/1384154390630592521)).
-
-So, if you don't have a controller or just prefer to use a mouse and keyboard you are out of luck...
-
-But that all changes with this extension!
+Since very few games on Xbox consoles support mouse and keyboard as first-class input devices, Microsoft chose to limit xCloud users to only using gamepad controllers to play. This extension fixes that restriction!
 
 ## Features
 
@@ -48,11 +44,6 @@ But that all changes with this extension!
 
 - Every game on xCloud is supported - regardless of whether or not it natively supports mouse and keyboard
 
-### ✅ Multiple presets
-
-- Manage multiple preset and custom configurations (e.g. create separate presets for "fighting games", "shooter", etc.)
-- Bind multiple keyboard keys or mouse buttons to any controller button
-
 ### ✅ Quick enable/disable
 
 - Easily disable the mouse/keyboard override and switch back to your controller whenever you feel like it with one click of the toggle
@@ -60,13 +51,17 @@ But that all changes with this extension!
 ### ✅ Configurable sensitivity
 
 - Control how sensitive you want mouse movement to be on a per-profile basis
-- (Note you may also need to tweak the control sensitivity in the game options as well for optimal use)
+- *(Note you may also need to tweak the control sensitivity in the game options as well for optimal use)*
+
+### ✅ Multiple presets
+
+- Manage multiple preset and custom configurations (e.g. create separate presets for "fighting games", "shooter", etc.)
+- Bind multiple keyboard keys or mouse buttons to any controller button
 
 ### ✅ Respects your privacy
 
 - No keyboard/mouse data (or any other data for that matter) is ever recorded or sent anywhere from your computer
-- The extension only runs on [xCloud](https://xbox.com/play) and [gamepad-tester.com](https://gamepad-tester.com)
-- But don't take my word for it: the entire extension is [open source](https://github.com/idolize/xcloud-keyboard-mouse), and you can read our (very straightforward) privacy policy [here](https://idolize.github.io/xcloud-keyboard-mouse/privacy.html)
+- The extension only runs on [xCloud](https://xbox.com/play) and [gamepad-tester.com](https://gamepad-tester.com); not other sites you visit
 
 ## How to enable
 
@@ -94,4 +89,4 @@ See [the contribution doc](CONTRIBUTING.md) for more information.
 
 ## License
 
-[GPLv3](https://github.com/idolize/xcloud-keyboard-mouse/blob/master/LICENSE.txt)
+The code is licensed as [GPLv3](https://github.com/idolize/xcloud-keyboard-mouse/blob/master/LICENSE.txt) with ONE RESTRICTION: you are not granted any permission to distribute your own copy of this code (or a modified version of this code) on any browser extension store (e.g. Chrome Web Store, Edge Add Ons store, Firefox Add Ons store, etc.)

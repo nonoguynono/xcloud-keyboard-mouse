@@ -1,15 +1,18 @@
-import { DefaultButton, PrimaryButton } from '@fluentui/react';
+import { DefaultButton, IIconProps, PrimaryButton } from '@fluentui/react';
 import React, { FormEventHandler, memo, useCallback, useEffect, useState } from 'react';
-import { DEFAULT_CONFIG_NAME, emptyGamepadConfig } from '../../shared/gamepadConfig';
+import { defaultGamepadConfig, DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
 import { GamepadConfig, KeyMap, StickNum } from '../../shared/types';
 import { getGamepadConfig, isConfigActive } from '../state/selectors';
 import { confirm } from '../utils/confirmUtil';
 import { useAppSelector } from './hooks/reduxHooks';
 import SensitivitySelector from './SensitivitySelector';
 import StickSelector from './StickSelector';
-import KeybindingsForButton from './KeybindingsForButton';
 import useKeyConfigEditorState from './hooks/useKeyConfigEditorState';
 import { exportConfig } from '../utils/importExport';
+import KeybindingsTable from './KeybindingsTable';
+
+const saveIcon: IIconProps = { iconName: 'Save' };
+const useIcon: IIconProps = { iconName: 'SkypeCheck' };
 
 interface SensitivityEditorProps {
   name: string;
@@ -25,8 +28,10 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
   const isSubmitting = status === 'writing';
   const isNewDraft = !storedGamepadConfig;
   const isDefaultConfig = name === DEFAULT_CONFIG_NAME;
-  const initialGamepadConfig = storedGamepadConfig || emptyGamepadConfig;
-  const [state, dispatch] = useKeyConfigEditorState(initialGamepadConfig);
+  // assume any "missing" config name is a new gamepad config, since it isn't saved yet
+  // and default the draft to the "defaultGamepadConfig"
+  const initialGamepadConfig = storedGamepadConfig || defaultGamepadConfig;
+  const [state, dispatchState] = useKeyConfigEditorState(initialGamepadConfig);
   const noMouse = state.config.mouseConfig.mouseControls === undefined;
   const hasChanges = isNewDraft || state.changes.keyConfig || state.changes.mouseConfig;
   // Starts in read-only state, but have button to enable editing/save changes?
@@ -37,28 +42,28 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
     } else {
       setIsEditing(false);
     }
-    dispatch({ type: 'reset', config: initialGamepadConfig });
-  }, [dispatch, name, isNewDraft, initialGamepadConfig]);
+    dispatchState({ type: 'reset', config: initialGamepadConfig });
+  }, [dispatchState, name, isNewDraft, initialGamepadConfig]);
 
   const handleKeybindChange = useCallback(
     (button: string, updated: KeyMap) => {
-      dispatch({
+      dispatchState({
         type: 'updateKeyConfig',
         button,
         keyMap: updated,
       });
     },
-    [dispatch],
+    [dispatchState],
   );
 
   const handleMouseControlsChange = useCallback(
     (mouseControls?: StickNum) => {
-      dispatch({
+      dispatchState({
         type: 'updateMouseControls',
         mouseControls,
       });
     },
-    [dispatch],
+    [dispatchState],
   );
 
   const handleActivate = useCallback(() => {
@@ -74,12 +79,12 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
     }
     if (isEditing && (!hasChanges || confirm('Are you sure you want to cancel? You will lose any changes.'))) {
       // Reset
-      dispatch({ type: 'reset', config: storedGamepadConfig });
+      dispatchState({ type: 'reset', config: storedGamepadConfig });
       setIsEditing(!isEditing);
     } else if (!isEditing) {
       setIsEditing(!isEditing);
     }
-  }, [dispatch, hasChanges, isEditing, isNewDraft, onCancelCreate, storedGamepadConfig]);
+  }, [dispatchState, hasChanges, isEditing, isNewDraft, onCancelCreate, storedGamepadConfig]);
 
   const handleDelete = useCallback(() => {
     if (confirm('Are you sure you want to delete this preset?')) {
@@ -105,25 +110,14 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
 
   return (
     <form className="vertical full-height" onSubmit={handleSubmit}>
-      <section className="config-editor full-absolute vertical">
-        <table className="margin-vertical">
-          <tbody>
-            {(Object.keys(emptyGamepadConfig.keyConfig) as Array<keyof typeof state.config.keyConfig>).map((button) => {
-              const val = state.config.keyConfig[button];
-              return (
-                <KeybindingsForButton
-                  key={button.toString()}
-                  useSpacers
-                  button={button}
-                  readOnly={!isEditing}
-                  value={val}
-                  onChange={handleKeybindChange}
-                  error={state.errors.keyConfig[button]}
-                />
-              );
-            })}
-          </tbody>
-        </table>
+      <section className="config-editor vertical">
+        <KeybindingsTable
+          className="margin-vertical"
+          gamepadConfig={state.config}
+          errors={state.errors}
+          isEditing={isEditing}
+          onKeybindChange={handleKeybindChange}
+        />
         <div className="margin-bottom">
           <div className="horizontal">
             <StickSelector
@@ -133,7 +127,7 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
             />
           </div>
           <SensitivitySelector
-            dispatch={dispatch}
+            dispatch={dispatchState}
             disabled={noMouse}
             readOnly={!isEditing}
             sensitivity={state.config.mouseConfig.sensitivity}
@@ -144,7 +138,12 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
         <div className="margin-right-s">
           <DefaultButton onClick={handleToggleEditing}>{isEditing ? 'Cancel' : 'Edit'}</DefaultButton>
           {!isEditing ? (
-            <DefaultButton className="margin-left-s" disabled={isDefaultConfig} onClick={handleDelete}>
+            <DefaultButton
+              className="margin-left-s"
+              disabled={isDefaultConfig}
+              onClick={handleDelete}
+              title={isDefaultConfig ? 'Default preset cannot be deleted' : undefined}
+            >
               Delete
             </DefaultButton>
           ) : null}
@@ -155,11 +154,19 @@ function GamepadConfigEditor({ name, onSubmitChanges, onCancelCreate, onActivate
           ) : null}
         </div>
         {isEditing ? (
-          <PrimaryButton type="submit" disabled={state.errors.hasErrors || !hasChanges || isSubmitting}>
+          <PrimaryButton
+            type="submit"
+            disabled={state.errors.hasErrors || !hasChanges || isSubmitting}
+            iconProps={saveIcon}
+          >
             {isNewDraft ? 'Create' : 'Save'}
           </PrimaryButton>
         ) : (
-          <PrimaryButton onClick={handleActivate} disabled={state.errors.hasErrors || isActive || isSubmitting}>
+          <PrimaryButton
+            onClick={handleActivate}
+            disabled={state.errors.hasErrors || isActive || isSubmitting}
+            iconProps={useIcon}
+          >
             Use
           </PrimaryButton>
         )}

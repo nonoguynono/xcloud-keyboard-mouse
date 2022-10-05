@@ -6,6 +6,9 @@ import {
   enabledReducer,
   currentGameReducer,
   pendingStatusesReducer,
+  paymentReducer,
+  upsellModalVisibilityReducer,
+  prefsReducer,
 } from './reducers';
 
 export const store = configureStore({
@@ -16,7 +19,10 @@ export const store = configureStore({
     enabled: enabledReducer,
     active: activeConfigReducer,
     configs: configDetailsReducer,
+    payment: paymentReducer,
     pending: pendingStatusesReducer,
+    upsellModalVisibility: upsellModalVisibilityReducer,
+    prefs: prefsReducer,
   },
 });
 
