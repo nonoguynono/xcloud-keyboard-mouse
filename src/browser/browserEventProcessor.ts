@@ -58,7 +58,7 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
     if (needRaf) {
       needRaf = false;
       // Queue processing
-      setTimeout(handleMouseMove, 40); // 16 ms = 60 fps, 32 ms = 30 fps
+      requestAnimationFrame(handleMouseMove);
     }
   };
   // Listen for pointer lock when user clicks on the target
