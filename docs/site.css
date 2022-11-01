@@ -89,11 +89,17 @@ a {
 }
 
 .standout {
-  color: var(--theme-primary);
+  color: var(--black);
+  text-decoration: none;
+  padding: 3px;
+  padding-top: 5px;
+  border-radius: 3px;
+  transition: background 200ms;
+  background-color: var(--theme-primary);
 }
 
 a.standout:hover {
-  color: var(--theme-dark);
+  background-color: var(--theme-light);
 }
 
 .title {
