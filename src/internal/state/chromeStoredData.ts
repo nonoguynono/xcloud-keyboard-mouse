@@ -20,6 +20,32 @@ enum SyncStorageKeys {
   GLOBAL_PREFS = 'PREFS',
 }
 
+async function syncStorageSet(items: { [key: string]: any }): Promise<void> {
+  try {
+    await chrome.storage.sync.set(items);
+  } catch (e) {
+    await chrome.storage.local.set(items);
+  }
+}
+
+async function syncStorageGet(
+  keys?: string | string[] | { [key: string]: any } | null,
+): Promise<{ [key: string]: any }> {
+  try {
+    return await chrome.storage.sync.get(keys);
+  } catch (e) {
+    return await chrome.storage.local.get(keys);
+  }
+}
+
+async function syncStorageRemove(keys: string | string[]): Promise<void> {
+  try {
+    return await chrome.storage.sync.remove(keys);
+  } catch (e) {
+    return await chrome.storage.local.remove(keys);
+  }
+}
+
 export function updateGameName(gameName: string | null) {
   return chrome.storage.local.set({ [LocalStorageKeys.GAME_NAME]: gameName });
 }
@@ -33,14 +59,14 @@ export async function getLocalGameStatus(): Promise<string | null> {
  * Sets "seen onboarding" to true.
  */
 export function storeSeenOnboarding() {
-  return chrome.storage.sync.set({ [SyncStorageKeys.ONBOARDED]: true });
+  return syncStorageSet({ [SyncStorageKeys.ONBOARDED]: true });
 }
 
 /**
  * Updates a stored gamepad config by name (does not set it as active)
  */
 export function storeGamepadConfig(name: string, gamepadConfig: GamepadConfig) {
-  return chrome.storage.sync.set({ [`${SyncStorageKeys.GAMEPAD_CONFIGS}:${name}`]: gamepadConfig });
+  return syncStorageSet({ [`${SyncStorageKeys.GAMEPAD_CONFIGS}:${name}`]: gamepadConfig });
 }
 
 /**
@@ -51,21 +77,21 @@ export function deleteGamepadConfig(name: string) {
   if (name === DEFAULT_CONFIG_NAME) {
     throw new Error('Cannot delete default config');
   }
-  return chrome.storage.sync.remove(`${SyncStorageKeys.GAMEPAD_CONFIGS}:${name}`);
+  return syncStorageRemove(`${SyncStorageKeys.GAMEPAD_CONFIGS}:${name}`);
 }
 
 /**
  * Sets the extension enabled/disabled.
  */
 export function storeGamepadConfigEnabled(enabled: boolean) {
-  return chrome.storage.sync.set({ [SyncStorageKeys.ENABLED]: enabled });
+  return syncStorageSet({ [SyncStorageKeys.ENABLED]: enabled });
 }
 
 /**
  * Updates global preferences.
  */
 export function storeGlobalPrefs(prefs: GlobalPrefs) {
-  return chrome.storage.sync.set({ [SyncStorageKeys.GLOBAL_PREFS]: prefs });
+  return syncStorageSet({ [SyncStorageKeys.GLOBAL_PREFS]: prefs });
 }
 
 /**
@@ -73,7 +99,7 @@ export function storeGlobalPrefs(prefs: GlobalPrefs) {
  */
 export function storeActiveGamepadConfig(name: string) {
   // TODO validate the name exists before setting it active?
-  return chrome.storage.sync.set({
+  return syncStorageSet({
     [SyncStorageKeys.ENABLED]: true,
     [SyncStorageKeys.ACTIVE_GAMEPAD_CONFIG]: name,
   });
@@ -111,6 +137,6 @@ function normalizeGamepadConfigs(data: Record<string, any> = {}): AllMyGamepadCo
 }
 
 export async function getAllStoredSync() {
-  const data = await chrome.storage.sync.get(null);
+  const data = await syncStorageGet(null);
   return normalizeGamepadConfigs(data);
 }
