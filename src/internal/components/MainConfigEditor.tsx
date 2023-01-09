@@ -5,16 +5,10 @@ import { GamepadConfig } from '../../shared/types';
 import { DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
 import GamepadConfigEditor from './GamepadConfigEditor';
 import GamepadConfigSelector from './GamepadConfigSelector';
-import { useAppDispatch, useAppSelector } from './hooks/reduxHooks';
-import {
-  deleteGamepadConfigAction,
-  modifyGamepadConfigAction,
-  activateGamepadConfigAction,
-  showUpsellModalAction,
-} from '../state/actions';
+import { useAppDispatch } from './hooks/reduxHooks';
+import { deleteGamepadConfigAction, modifyGamepadConfigAction, activateGamepadConfigAction } from '../state/actions';
 import { PendingReadStatus } from '../state/reducers';
 import ErrorDetails from './ErrorDetails';
-import { getPayment } from '../state/selectors';
 import GlobalPrefsEditor from './GlobalPrefsEditor';
 
 interface MainConfigEditorProps {
@@ -29,15 +23,10 @@ export default function MainConfigEditor({ activeConfig, isEnabled, configs, sta
   const dispatch = useAppDispatch();
   const [currentConfig, setCurrentConfig] = useState(activeConfig);
   const [showSettings, setShowSettings] = useState(false);
-  const { paid } = useAppSelector(getPayment);
 
   useEffect(() => {
     setCurrentConfig(activeConfig);
   }, [activeConfig]);
-
-  const openPaymentPage = useCallback(async () => {
-    dispatch(showUpsellModalAction(true));
-  }, [dispatch]);
 
   const handleActivateGamepadConfig = useCallback(
     (name: string) => {
@@ -95,14 +84,12 @@ export default function MainConfigEditor({ activeConfig, isEnabled, configs, sta
               <GamepadConfigSelector
                 className="padding-bottom-s"
                 isEnabled={isEnabled}
-                isPaid={paid}
                 activeConfig={activeConfig}
                 currentConfig={currentConfig}
                 allConfigs={configs}
                 setCurrentConfig={setCurrentConfig}
                 addNewConfig={handleAddNewConfig}
                 importConfig={handleSubmitGamepadConfig}
-                openPaymentPage={openPaymentPage}
                 toggleShowSettings={toggleShowSettings}
               />
               <GamepadConfigEditor

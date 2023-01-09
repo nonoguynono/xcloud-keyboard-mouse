@@ -65,17 +65,20 @@ export default function HeaderMoreOptions() {
   }, [payment.paid, handlePayClick]);
 
   return (
-    <IconButton
-      menuProps={{
-        items: menuItems,
-        theme: fluentXboxTheme,
-        calloutProps: {
-          // Needed to fix issue in Safari
-          preventDismissOnEvent: (e) => e.type === 'resize',
-        },
-      }}
-      role="menuitem"
-      title="More info"
-    />
+    <div className="relative">
+      <IconButton
+        menuProps={{
+          items: menuItems,
+          theme: fluentXboxTheme,
+          calloutProps: {
+            // Needed to fix issue in Safari
+            preventDismissOnEvent: (e) => e.type === 'resize',
+          },
+        }}
+        role="menuitem"
+        title="More info"
+      />
+      {!payment.paid ? <div className="unpaid-dot" /> : null}
+    </div>
   );
 }

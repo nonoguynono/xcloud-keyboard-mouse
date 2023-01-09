@@ -1,4 +1,5 @@
 import { notPaidPayment } from '../../shared/payments';
+import { computeTrialState, TrialState } from '../../shared/trial';
 import { RootState } from './store';
 
 export const getAllGamepadConfigs = (state: RootState) => {
@@ -37,6 +38,20 @@ export const getGameName = (state: RootState) => {
 
 export const getPayment = (state: RootState) => {
   return state.payment || notPaidPayment;
+};
+
+export const getPaymentStatus = (state: RootState) => {
+  return state.pending.payment;
+};
+
+export const getTrialState = (state: RootState): TrialState => {
+  return computeTrialState(getPayment(state).trialStartedAt);
+};
+
+export const getIsAllowed = (state: RootState): boolean => {
+  const trialState = getTrialState(state);
+  const payment = getPayment(state);
+  return payment.paid || trialState.status === 'active';
 };
 
 export const getUpsellModalVisibility = (state: RootState) => {

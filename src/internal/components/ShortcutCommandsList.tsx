@@ -34,7 +34,7 @@ export default function ShortcutCommandsList() {
               })
             }
           >
-            Change on the Extensions page...
+            Change shortcut keys on the Extensions page...
           </Link>
         </div>
       )}

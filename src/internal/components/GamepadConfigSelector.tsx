@@ -20,13 +20,11 @@ interface GamepadConfigSelectorProps {
   className?: string;
   currentConfig: string;
   isEnabled: boolean;
-  isPaid?: boolean;
   activeConfig: string | null;
   allConfigs: Record<string, GamepadConfig>;
   setCurrentConfig: (name: string) => void;
   addNewConfig: (newName: string) => void;
   importConfig: (name: string, config: GamepadConfig) => void;
-  openPaymentPage: () => void;
   toggleShowSettings: () => void;
 }
 
@@ -58,12 +56,10 @@ function GamepadConfigSelector({
   currentConfig,
   activeConfig,
   isEnabled,
-  isPaid,
   allConfigs,
   setCurrentConfig,
   addNewConfig,
   importConfig,
-  openPaymentPage,
   toggleShowSettings,
 }: GamepadConfigSelectorProps) {
   const configsArray = useMemo(() => Object.keys(allConfigs), [allConfigs]);
@@ -130,12 +126,10 @@ function GamepadConfigSelector({
           <ChevronRightIcon />
         </DefaultButton>
         <NewConfigButton
-          isPaid={isPaid}
           disabled={configsArray.length >= MAX_NUM_CONFIGS - 1}
           allConfigs={allConfigs}
           onCreate={addNewConfig}
           onImport={importConfig}
-          onOpenPaymentPage={openPaymentPage}
         />
         <IconButton onClick={toggleShowSettings} title="Settings" ariaLabel="Settings">
           <Wrench />

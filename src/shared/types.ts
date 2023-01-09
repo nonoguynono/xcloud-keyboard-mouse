@@ -62,6 +62,7 @@ export interface Payment {
   paid: ExtpayUser['paid'];
   paidAt: number | null;
   installedAt: number;
+  trialStartedAt: number | null;
 }
 
 export interface AllMyGamepadConfigs {

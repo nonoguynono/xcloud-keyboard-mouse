@@ -9,4 +9,5 @@ export const notPaidPayment: Payment = {
   paid: false,
   paidAt: null,
   installedAt: new Date().getTime(),
+  trialStartedAt: null,
 };

@@ -2,7 +2,7 @@ import { createAction, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { GamepadConfig, GlobalPrefs, Payment } from '../../shared/types';
 import { DEFAULT_CONFIG_NAME } from '../../shared/gamepadConfig';
 import { activateGamepadConfigMsg, disableGamepadMsg, updatePrefsMsg } from '../../shared/messages';
-import { getGamepadConfig, isConfigActive } from './selectors';
+import { getGamepadConfig, getIsAllowed, isConfigActive } from './selectors';
 import { RootState } from './store';
 import {
   deleteGamepadConfig,
@@ -29,12 +29,14 @@ export const fetchPaymentAction = createAsyncThunk('payment/fetch', async (): Pr
     paid: user.paid,
     paidAt: user.paidAt && user.paidAt.getTime(),
     installedAt: user.installedAt.getTime(),
+    trialStartedAt: user.trialStartedAt && user.trialStartedAt.getTime(),
   };
 });
 
 async function _setActiveConfig(name: string, state: RootState) {
   const { config: gamepadConfig } = getGamepadConfig(state, name);
   if (!gamepadConfig) throw new Error('Missing gamepad config cache');
+  if (!getIsAllowed(state)) throw new Error('Not allowed to enable config');
   return await setActiveConfig(name, gamepadConfig);
 }
 

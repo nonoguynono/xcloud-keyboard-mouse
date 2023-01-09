@@ -25,6 +25,10 @@ html, body {
   white-space: nowrap;
 }
 
+.relative {
+  position: relative;
+}
+
 .no-margin {
   margin: 0;
 }
@@ -276,4 +280,14 @@ html, body {
 
 .global-prefs-body .command-keys {
   letter-spacing: 0.5ch;
+}
+
+.unpaid-dot {
+  background-color: red;
+  position: absolute;
+  right: 2px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
 }

@@ -8,20 +8,11 @@ import useIsMounted from './hooks/useIsMounted';
 interface NewConfigButtonProps {
   allConfigs: Record<string, GamepadConfig>;
   disabled?: boolean;
-  isPaid?: boolean;
   onCreate: (name: string) => void;
   onImport: (name: string, config: GamepadConfig) => void;
-  onOpenPaymentPage: () => void;
 }
 
-export default function NewConfigButton({
-  disabled,
-  isPaid,
-  allConfigs,
-  onCreate,
-  onImport,
-  onOpenPaymentPage,
-}: NewConfigButtonProps) {
+export default function NewConfigButton({ disabled, allConfigs, onCreate, onImport }: NewConfigButtonProps) {
   const buttonId = 'new-config-btn';
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
@@ -35,12 +26,8 @@ export default function NewConfigButton({
   }, [name, allConfigs]);
   const triggerRef = useRef<null | HTMLButtonElement>(null);
   const handleNewBtnClick = useCallback(() => {
-    if (isPaid) {
-      setIsOpen(!isOpen);
-    } else {
-      onOpenPaymentPage();
-    }
-  }, [isOpen, isPaid, onOpenPaymentPage]);
+    setIsOpen(!isOpen);
+  }, [isOpen]);
   const handleClose = useCallback(() => {
     setIsOpen(false);
   }, []);

@@ -18,9 +18,11 @@ import {
   seenOnboardingMsg,
 } from './shared/messages';
 import { getExtPay } from './shared/payments';
+import { computeTrialState, trialDays } from './shared/trial';
 import { GlobalPrefs } from './shared/types';
 
-getExtPay().startBackground();
+const extpay = getExtPay();
+extpay.startBackground();
 
 /*
  * This script is run as a service worker and may be killed or restarted at any time.
@@ -46,6 +48,7 @@ chrome.commands.onCommand.addListener((command) => {
     'profile-prev': true,
     'profile-next': false,
   };
+  const userPromise = extpay.getUser();
   getAllStoredSync().then(({ activeConfig, configs, prefs }) => {
     const isPrev = commandToProfileOrder[command];
     if (command === 'show-hide-cheatsheet') {
@@ -56,12 +59,17 @@ chrome.commands.onCommand.addListener((command) => {
       sendMessage(updatePrefsMsg(newPrefs));
       storeGlobalPrefs(newPrefs);
     } else if (isPrev !== undefined) {
-      const configsArray = Object.keys(configs);
-      const currentConfigIndex = configsArray.indexOf(activeConfig);
-      const nextConfigName =
-        currentConfigIndex === -1 ? DEFAULT_CONFIG_NAME : arrayPrevOrNext(configsArray, currentConfigIndex, isPrev);
-      const nextConfig = configs[nextConfigName];
-      setActiveConfig(nextConfigName, nextConfig);
+      // Verify user is paid
+      userPromise.then((user) => {
+        if (user.paid || computeTrialState(user.trialStartedAt).status === 'active') {
+          const configsArray = Object.keys(configs);
+          const currentConfigIndex = configsArray.indexOf(activeConfig);
+          const nextConfigName =
+            currentConfigIndex === -1 ? DEFAULT_CONFIG_NAME : arrayPrevOrNext(configsArray, currentConfigIndex, isPrev);
+          const nextConfig = configs[nextConfigName];
+          setActiveConfig(nextConfigName, nextConfig);
+        }
+      });
     }
     // Close the popup if it is open to avoid it showing stale data
     chrome.runtime.sendMessage(closeWindowMsg());
@@ -85,9 +93,13 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
     console.log('Initialized', msg.gameName);
     updateGameName(msg.gameName);
     // Send any currently-active config
-    getAllStoredSync().then(({ isEnabled, activeConfig, configs, seenOnboarding, prefs }) => {
-      const config = !isEnabled ? null : configs[activeConfig];
-      sendResponse(initializeResponseMsg(activeConfig, config, seenOnboarding, prefs));
+    Promise.all([getAllStoredSync(), extpay.getUser()]).then(([stored, user]) => {
+      const { isEnabled, activeConfig, configs, seenOnboarding, prefs } = stored;
+      const isAllowed = user.paid || computeTrialState(user.trialStartedAt).status === 'active';
+      const disabled = !isEnabled || !isAllowed;
+      const configName = disabled ? null : activeConfig;
+      const config = disabled ? null : configs[activeConfig];
+      sendResponse(initializeResponseMsg(configName, config, seenOnboarding, prefs));
     });
     // https://stackoverflow.com/a/56483156
     return true;
@@ -100,6 +112,13 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
   if (msg.type === MessageTypes.SEEN_ONBOARDING) {
     console.log('User dismissed onboarding');
     storeSeenOnboarding();
+    extpay.getUser().then((user) => {
+      // Automatically open trial popup if user hasn't paid and isn't already in a trial
+      const trialState = computeTrialState(user.trialStartedAt);
+      if (!user.paid && trialState.status === 'inactive') {
+        extpay.openTrialPage(`${trialDays} day`);
+      }
+    });
     return false;
   }
   return false;

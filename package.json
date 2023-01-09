@@ -33,7 +33,7 @@
     "@reduxjs/toolkit": "^1.8.2",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
-    "extpay": "^3.0.4",
+    "extpay": "^3.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^8.0.2",
