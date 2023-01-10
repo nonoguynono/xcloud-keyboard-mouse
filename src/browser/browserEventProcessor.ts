@@ -42,7 +42,7 @@ function listenMouseMove(axe: StickNum = 1, sensitivity = DEFAULT_SENSITIVITY) {
     clearTimeout(stopMovingTimer);
     stopMovingTimer = setTimeout(() => {
       simulateAxeMove(axe, 0, 0);
-    }, 10);
+    }, 50);
     // trigger the joystick on move
     const clampedX = movementX === 0 ? 0 : Math.max(Math.min(movementX / sensitivity, 1), -1);
     const clampedY = movementY === 0 ? 0 : Math.max(Math.min(movementY / sensitivity, 1), -1);
